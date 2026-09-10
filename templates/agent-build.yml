@@ -1,0 +1,76 @@
+name: Build
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  build:
+    if: github.event.label.name == 'plan-approved'
+    runs-on: [self-hosted, macos, devmini]
+    timeout-minutes: 120
+    concurrency:
+      group: agent-${{ github.event.issue.number }}
+      cancel-in-progress: false
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+        with: { fetch-depth: 0 }
+
+      - name: Fetch the approved plan
+        run: |
+          git fetch origin "plan/${{ github.event.issue.number }}" || true
+          git checkout "origin/plan/${{ github.event.issue.number }}" \
+            -- "docs/plans/${{ github.event.issue.number }}.md" || true
+          test -f "docs/plans/${{ github.event.issue.number }}.md" \
+            || { echo "::error::No approved plan file found"; exit 1; }
+
+      - run: npm ci
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          plugin_marketplaces: "https://github.com/jevanw-hash/agent-foundry.git"
+          plugins: "agent-foundry@agent-foundry"
+          prompt: |
+            `docs/plans/${{ github.event.issue.number }}.md` is approved.
+            It is your scope. Do not exceed it.
+
+            1. Branch: `agent/${{ github.event.issue.number }}-<short-slug>`
+
+            2. For each independent task in the work breakdown, spawn a
+               `builder` subagent. They run in their own worktrees; give
+               each a disjoint set of files. Three focused builders beat
+               six scattered ones — batch tasks if they touch the same code.
+
+            3. Spawn `test-engineer` to write tests FROM THE PLAN's
+               acceptance criteria. Not from the code that was written.
+
+            4. Run every acceptance-criterion command in the plan. Paste
+               the real terminal output. If one fails, fix it and run it
+               again. Never report a criterion as met without having
+               executed its command — this is the single failure mode
+               that makes the whole pipeline worthless.
+
+            5. Spawn `adversary` on the finished branch, giving it the
+               plan and the diff only. Fix everything it ranks critical
+               or high. Record what you chose not to fix and why.
+
+            6. Open a PR with `gh pr create`. Body must contain:
+                 - `Closes #${{ github.event.issue.number }}`
+                 - The acceptance criteria table with real pasted output
+                 - Adversary findings: fixed / accepted, with reasons
+                 - Anything you noticed but deliberately left alone
+                 - `🤖 Generated with [Claude Code](https://claude.com/claude-code)`
+
+            If the plan turns out to be wrong, STOP. Comment on the issue
+            explaining what's wrong and open no PR. A correct refusal
+            beats a confidently wrong PR.
+          claude_args: |
+            --max-turns 150
+            --max-budget-usd 40
+            --model opus
+            --permission-mode acceptEdits

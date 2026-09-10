@@ -1,0 +1,7 @@
+{
+  "name": "agent-foundry",
+  "owner": { "name": "Jevan Woolley" },
+  "plugins": [
+    { "source": "./", "name": "agent-foundry" }
+  ]
+}

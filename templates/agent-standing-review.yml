@@ -1,0 +1,42 @@
+# Feeds the FRONT of the pipeline: opens issues, never PRs.
+name: Standing review
+on:
+  schedule:
+    - cron: "0 13 * * 1"   # Mondays 07:00 America/Denver during MDT (14:00 UTC in MST)
+  workflow_dispatch:
+
+jobs:
+  review:
+    runs-on: [self-hosted, macos, devmini]
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      issues: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+        with: { fetch-depth: 0 }
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            Review what shipped in the last week:
+            `git log --since='7 days ago' --stat`
+
+            Find the three highest-value improvements — a flaky test,
+            duplicated logic, a dependency that's now unnecessary, a
+            module that's grown past its original purpose, a test suite
+            that passes without proving anything. Rank by pain removed
+            divided by effort.
+
+            Open ONE issue per improvement, labeled `idea`, written as a
+            problem statement rather than a solution. Do not open a PR
+            and do not touch code.
+
+            If nothing meets the bar, open nothing and say so in the log.
+            An empty week is a valid result.
+          claude_args: |
+            --max-turns 50
+            --max-budget-usd 10
+            --model opus
+            --allowedTools "Bash(git log:*),Bash(git diff:*),Bash(gh issue create:*),Bash(gh issue list:*),Read,Grep,Glob,Agent"

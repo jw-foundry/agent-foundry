@@ -1,0 +1,55 @@
+name: Plan
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  plan:
+    if: github.event.label.name == 'agent:plan'
+    runs-on: [self-hosted, macos, devmini]
+    timeout-minutes: 45
+    concurrency:
+      group: agent-${{ github.event.issue.number }}
+      cancel-in-progress: false
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+        with: { fetch-depth: 0 }
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          plugin_marketplaces: "https://github.com/jevanw-hash/agent-foundry.git"
+          plugins: "agent-foundry@agent-foundry"
+          prompt: |
+            Read issue #${{ github.event.issue.number }} INCLUDING all its
+            comments — the brainstorm comment names the recommended option
+            and my replies may have changed it. My most recent instruction
+            wins over the recommendation.
+
+            1. Spawn the `architect` subagent to write
+               `docs/plans/${{ github.event.issue.number }}.md`, following
+               its own required section list exactly.
+            2. Spawn `devils-advocate` on the finished draft. Fold its
+               objections into the Risks section with real answers, or
+               revise the plan. Do not paste the objections unanswered.
+            3. Commit the plan file on a branch named
+               `plan/${{ github.event.issue.number }}` and push it.
+            4. Comment on the issue with: a link to the plan file, the
+               work breakdown as a checklist, and the acceptance criteria
+               table. End with:
+               "Edit the plan file directly if you disagree, then add the
+               `plan-approved` label to start the build."
+
+            Write no implementation code. The only file you create is the
+            plan. If the issue is too vague to plan, say exactly what you
+            need from me and create nothing.
+          claude_args: |
+            --max-turns 60
+            --max-budget-usd 12
+            --model opus
+            --permission-mode acceptEdits

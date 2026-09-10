@@ -1,0 +1,7 @@
+{
+  "name": "agent-foundry",
+  "description": "A dev team as a plugin: architect, devil's advocate, researcher, builder, test engineer, adversary — plus the hooks that make the definition of done enforceable.",
+  "version": "0.1.0",
+  "author": { "name": "Jevan Woolley" },
+  "license": "UNLICENSED"
+}

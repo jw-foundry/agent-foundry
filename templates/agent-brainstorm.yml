@@ -1,0 +1,57 @@
+name: Brainstorm
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  brainstorm:
+    if: github.event.label.name == 'agent:brainstorm'
+    runs-on: [self-hosted, macos, devmini]
+    timeout-minutes: 30
+    concurrency:
+      group: agent-${{ github.event.issue.number }}
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      issues: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+        with: { fetch-depth: 1 }
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          plugin_marketplaces: "https://github.com/jevanw-hash/agent-foundry.git"
+          plugins: "agent-foundry@agent-foundry"
+          prompt: |
+            Read issue #${{ github.event.issue.number }}:
+            `gh issue view ${{ github.event.issue.number }}`
+
+            Explore it from four independent angles. Spawn four subagents
+            and let them run in parallel:
+
+              - `researcher` — what already solves this, and what did
+                previous attempts get wrong?
+              - `architect` — two or three genuinely different technical
+                approaches. Not one approach with variations. Name the
+                trade-off that actually separates them.
+              - a subagent arguing the simplest possible thing, including
+                the case for not building this at all.
+              - `devils-advocate` — attack all of the above.
+
+            Then post ONE comment on the issue containing:
+
+              - The idea restated in one paragraph, in my terms.
+              - A table of 2-3 options: Approach | Main trade-off | Rough size.
+              - Your recommendation and the single reason for it.
+              - The open questions only I can answer.
+
+            Do not write code. Do not create files. Do not recommend an
+            option the devil's advocate found a fatal problem with — say
+            it's ruled out and why.
+          claude_args: |
+            --max-turns 40
+            --max-budget-usd 8
+            --model opus
+            --allowedTools "Bash(gh issue view:*),Bash(gh issue comment:*),Read,Grep,Glob,WebSearch,WebFetch,Agent"
