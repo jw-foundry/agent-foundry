@@ -23,6 +23,18 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/bin/require-comment.sh",
+            "timeout": 60,
+            "statusMessage": "Verifying the run actually published something"
+          }
+        ]
+      }
     ]
   }
 }
