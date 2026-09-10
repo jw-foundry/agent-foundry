@@ -4,6 +4,7 @@ description: Writes tests derived from a plan's acceptance criteria, not from th
 isolation: worktree
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
+background: false
 effort: high
 color: yellow
 ---

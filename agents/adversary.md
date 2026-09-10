@@ -4,6 +4,7 @@ description: Attempts to break completed work before it becomes a PR. Reports fi
 tools: Read, Grep, Glob, Bash
 disallowedTools: Write, Edit, NotebookEdit
 model: opus
+background: false
 effort: high
 color: red
 ---

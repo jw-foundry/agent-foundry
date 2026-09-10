@@ -4,6 +4,7 @@ description: Attacks a proposed approach or plan before it is committed to. Prod
 tools: Read, Grep, Glob, WebSearch, WebFetch
 disallowedTools: Write, Edit, NotebookEdit
 model: opus
+background: false
 effort: high
 color: red
 ---

@@ -4,6 +4,7 @@ description: Finds prior art, existing solutions, and relevant documentation bef
 tools: Read, Grep, Glob, WebSearch, WebFetch
 disallowedTools: Write, Edit, NotebookEdit
 model: sonnet
+background: false
 effort: medium
 color: blue
 ---

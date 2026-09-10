@@ -4,6 +4,7 @@ description: Implements specific numbered tasks from an approved plan file. Alwa
 isolation: worktree
 tools: Read, Write, Edit, Grep, Glob, Bash, Agent
 model: sonnet
+background: false
 effort: high
 color: green
 ---

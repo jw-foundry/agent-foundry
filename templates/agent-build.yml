@@ -31,11 +31,21 @@ jobs:
       - run: npm ci
 
       - uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ github.token }}
         with:
+          show_full_output: true
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           plugin_marketplaces: "https://github.com/jw-foundry/agent-foundry.git"
           plugins: "agent-foundry@agent-foundry"
           prompt: |
+
+            CRITICAL: subagents default to running in the background. You
+            MUST wait for every one of them to return before you write
+            anything. Do not end your turn while any agent is still
+            working — if you do, their results are lost and the run
+            produces nothing. Your turn ends only after the comment is
+            posted.
             `docs/plans/${{ github.event.issue.number }}.md` is approved.
             It is your scope. Do not exceed it.
 

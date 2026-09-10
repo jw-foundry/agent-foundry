@@ -20,7 +20,10 @@ jobs:
         with: { fetch-depth: 1 }
 
       - uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ github.token }}
         with:
+          show_full_output: true
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           plugin_marketplaces: "https://github.com/jw-foundry/agent-foundry.git"
           plugins: "agent-foundry@agent-foundry"
@@ -47,6 +50,14 @@ jobs:
               - Your recommendation and the single reason for it.
               - The open questions only I can answer.
 
+
+            CRITICAL: subagents default to running in the background. You
+            MUST wait for every one of them to return before you write
+            anything. Do not end your turn while any agent is still
+            working — if you do, their results are lost and the run
+            produces nothing. Your turn ends only after the comment is
+            posted.
+
             Do not write code. Do not create files. Do not recommend an
             option the devil's advocate found a fatal problem with — say
             it's ruled out and why.
@@ -54,4 +65,4 @@ jobs:
             --max-turns 40
             --max-budget-usd 8
             --model opus
-            --allowedTools "Bash(gh issue view:*),Bash(gh issue comment:*),Read,Grep,Glob,WebSearch,WebFetch,Agent"
+            --allowedTools "Bash(gh issue view:*),Bash(gh issue comment:*),Bash(gh issue list:*),Bash(gh repo view:*),Bash(git log:*),Bash(git diff:*),Bash(git status:*),Bash(ls:*),Bash(cat:*),Bash(which:*),Read,Grep,Glob,WebSearch,WebFetch,Agent"

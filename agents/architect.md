@@ -4,6 +4,7 @@ description: Turns an approved direction into a written implementation spec with
 tools: Read, Grep, Glob, WebSearch, WebFetch, Write
 permissionMode: plan
 model: opus
+background: false
 effort: high
 color: cyan
 ---
